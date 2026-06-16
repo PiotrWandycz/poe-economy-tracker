@@ -148,6 +148,44 @@ public class EconomyEndpointTests
         Assert.NotNull(response);
         Assert.Equal(189.5m, response.DivineOrbRate);
     }
+
+    // poe.ninja should be called once per section (by the background cache service),
+    // not once per HTTP request. Three requests → same 1 poe.ninja call.
+    [Fact]
+    public async Task PoeNinja_is_called_once_regardless_of_request_count()
+    {
+        var fake = new FakePoeNinjaClient();
+        fake.AddSection("Currency", new PoeNinjaApiResponse(
+            Core: new PoeNinjaCore(
+                Items: [new("divine-orb", "Divine Orb")],
+                Rates: new Dictionary<string, decimal> { ["exalted"] = 200m },
+                Primary: "divine"
+            ),
+            Lines: [new("divine-orb", PrimaryValue: 1m)]
+        ));
+
+        await using var app = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(b => b
+                .ConfigureTestServices(services =>
+                    services.AddSingleton<IPoeNinjaClient>(fake))
+                .ConfigureAppConfiguration((_, cfg) => {
+                    cfg.Sources.Clear();
+                    cfg.AddInMemoryCollection(new Dictionary<string, string?> {
+                        ["Economy:League"] = "Test League",
+                        ["Economy:ThresholdExalts"] = "0",
+                        ["Economy:Sections:0:Type"] = "Currency",
+                        ["Economy:Sections:0:Name"] = "Currency",
+                        ["Economy:Sections:0:Group"] = "General"
+                    });
+                }));
+
+        var client = app.CreateClient();
+        await client.GetAsync("/api/economy");
+        await client.GetAsync("/api/economy");
+        await client.GetAsync("/api/economy");
+
+        Assert.Equal(1, fake.CallCount);
+    }
 }
 
 // DTOs mirroring the endpoint's JSON response shape
