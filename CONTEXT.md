@@ -1,6 +1,6 @@
 # PoE Economy Tracker
 
-A price-checking tool for Path of Exile 2's player-driven economy. Scrapes data from poe.ninja (no public API exists) and caches it server-side to show the most valuable tradeable items across Sections on a single page.
+A price-checking tool for Path of Exile 2's player-driven economy. Fetches data from the poe.ninja JSON API and caches it server-side to show the most valuable tradeable items across Sections on a single page.
 
 ## Language
 

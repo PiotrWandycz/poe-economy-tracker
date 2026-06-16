@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PoeEconomy.Api.Tests/PoeEconomy.Api.Tests.csproj" />
+    <Project Path="src/PoeEconomy.Api/PoeEconomy.Api.csproj" />
+  </Folder>
+</Solution>
