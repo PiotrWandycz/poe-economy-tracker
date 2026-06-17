@@ -23,20 +23,20 @@ describe('EconomyOverview', () => {
     expect(screen.getByRole('heading', { name: 'Currency' })).toBeInTheDocument()
   })
 
-  it('shows Divine Orbs for items at or above the divine rate', () => {
+  it('shows Div for items at or above the divine rate', () => {
     render(<EconomyOverview data={BASE} />)
-    // 1000 Ex at rate 200 = 5 Divine Orbs
+    // 1000 Ex at rate 200 = 5 Div
     expect(screen.getByText('Divine Orb')).toBeInTheDocument()
-    expect(screen.getByText('5 Divine Orbs')).toBeInTheDocument()
+    expect(screen.getByText('5 Div')).toBeInTheDocument()
   })
 
-  it('shows Exalted Orbs for items below the divine rate', () => {
+  it('shows Ex for items below the divine rate', () => {
     const data = {
       sections: [{ name: 'Currency', group: 'General', items: [{ name: 'Chaos Orb', valueInExalts: 50 }] }],
       divineOrbRate: 200,
     }
     render(<EconomyOverview data={data} />)
-    expect(screen.getByText('50 Exalted Orbs')).toBeInTheDocument()
+    expect(screen.getByText('50 Ex')).toBeInTheDocument()
   })
 
   it('hides sections with no items', () => {
