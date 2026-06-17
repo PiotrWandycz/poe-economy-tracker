@@ -42,7 +42,7 @@ public class EconomyCacheService(
             if (divineRate == 0 && apiResponse.Core.Rates.TryGetValue("exalted", out var rate))
                 divineRate = rate;
 
-            var nameById = apiResponse.Core.Items.ToDictionary(x => x.Id, x => x.Name);
+            var nameById = apiResponse.Items.ToDictionary(x => x.Id, x => x.Name);
 
             var items = apiResponse.Lines
                 .Where(l => nameById.ContainsKey(l.Id))
