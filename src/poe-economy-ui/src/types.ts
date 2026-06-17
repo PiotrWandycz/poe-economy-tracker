@@ -1,6 +1,7 @@
 export interface Item {
   name: string
   valueInExalts: number
+  iconUrl?: string
 }
 
 export interface Section {
