@@ -15,6 +15,7 @@ public class EconomyEndpointTests
     public async Task Returns_items_above_threshold_sorted_by_value_descending()
     {
         var fake = new FakePoeNinjaClient();
+        fake.SetSections([new PoeNinjaSection("Currency", "General", "Currency")]);
         fake.AddSection("Currency", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
                 Items: [
@@ -40,10 +41,7 @@ public class EconomyEndpointTests
                     cfg.Sources.Clear();
                     cfg.AddInMemoryCollection(new Dictionary<string, string?> {
                         ["Economy:League"] = "Test League",
-                        ["Economy:ThresholdExalts"] = "100",
-                        ["Economy:Sections:0:Type"] = "Currency",
-                        ["Economy:Sections:0:Name"] = "Currency",
-                        ["Economy:Sections:0:Group"] = "General"
+                        ["Economy:ThresholdExalts"] = "100"
                     });
                 }));
 
@@ -69,6 +67,10 @@ public class EconomyEndpointTests
     public async Task Excludes_sections_where_no_items_exceed_threshold()
     {
         var fake = new FakePoeNinjaClient();
+        fake.SetSections([
+            new PoeNinjaSection("Currency", "General", "Currency"),
+            new PoeNinjaSection("Fragments", "General", "Fragments")
+        ]);
         fake.AddSection("Currency", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
                 Items: [new("divine-orb", "Divine Orb")],
@@ -94,13 +96,7 @@ public class EconomyEndpointTests
                     cfg.Sources.Clear();
                     cfg.AddInMemoryCollection(new Dictionary<string, string?> {
                         ["Economy:League"] = "Test League",
-                        ["Economy:ThresholdExalts"] = "500",
-                        ["Economy:Sections:0:Type"] = "Currency",
-                        ["Economy:Sections:0:Name"] = "Currency",
-                        ["Economy:Sections:0:Group"] = "General",
-                        ["Economy:Sections:1:Type"] = "Fragments",
-                        ["Economy:Sections:1:Name"] = "Fragments",
-                        ["Economy:Sections:1:Group"] = "General"
+                        ["Economy:ThresholdExalts"] = "500"
                     });
                 }));
 
@@ -118,6 +114,7 @@ public class EconomyEndpointTests
     public async Task Response_includes_divine_orb_rate_from_section_data()
     {
         var fake = new FakePoeNinjaClient();
+        fake.SetSections([new PoeNinjaSection("Currency", "General", "Currency")]);
         fake.AddSection("Currency", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
                 Items: [new("divine-orb", "Divine Orb")],
@@ -135,10 +132,7 @@ public class EconomyEndpointTests
                     cfg.Sources.Clear();
                     cfg.AddInMemoryCollection(new Dictionary<string, string?> {
                         ["Economy:League"] = "Test League",
-                        ["Economy:ThresholdExalts"] = "0",
-                        ["Economy:Sections:0:Type"] = "Currency",
-                        ["Economy:Sections:0:Name"] = "Currency",
-                        ["Economy:Sections:0:Group"] = "General"
+                        ["Economy:ThresholdExalts"] = "0"
                     });
                 }));
 
@@ -155,6 +149,7 @@ public class EconomyEndpointTests
     public async Task PoeNinja_is_called_once_regardless_of_request_count()
     {
         var fake = new FakePoeNinjaClient();
+        fake.SetSections([new PoeNinjaSection("Currency", "General", "Currency")]);
         fake.AddSection("Currency", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
                 Items: [new("divine-orb", "Divine Orb")],
@@ -172,10 +167,7 @@ public class EconomyEndpointTests
                     cfg.Sources.Clear();
                     cfg.AddInMemoryCollection(new Dictionary<string, string?> {
                         ["Economy:League"] = "Test League",
-                        ["Economy:ThresholdExalts"] = "0",
-                        ["Economy:Sections:0:Type"] = "Currency",
-                        ["Economy:Sections:0:Name"] = "Currency",
-                        ["Economy:Sections:0:Group"] = "General"
+                        ["Economy:ThresholdExalts"] = "0"
                     });
                 }));
 

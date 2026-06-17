@@ -1,15 +1,22 @@
 using System.Net.Http.Json;
-using System.Text.Json.Serialization;
 
 namespace PoeEconomy.Api.PoeNinja;
 
 public class PoeNinjaHttpClient(HttpClient httpClient) : IPoeNinjaClient
 {
-    private const string BaseUrl = "https://poe.ninja/poe2/api/economy/exchange/current/overview";
+    private const string ApiBase = "https://poe.ninja/poe2/api/economy/exchange/current/overview";
+    private const string WebBase = "https://poe.ninja/poe2/economy";
+
+    public async Task<List<PoeNinjaSection>> GetLeagueSectionsAsync(string league)
+    {
+        var slug = league.Replace(" ", "").ToLowerInvariant();
+        var html = await httpClient.GetStringAsync($"{WebBase}/{slug}/currency");
+        return PoeNinjaHtmlParser.ParseNavSections(html);
+    }
 
     public async Task<PoeNinjaApiResponse> GetSectionAsync(string league, string sectionType)
     {
-        var url = $"{BaseUrl}?league={Uri.EscapeDataString(league)}&type={sectionType}";
+        var url = $"{ApiBase}?league={Uri.EscapeDataString(league)}&type={sectionType}";
         return await httpClient.GetFromJsonAsync<PoeNinjaApiResponse>(url, JsonOptions.Default)
                ?? throw new InvalidOperationException($"Empty response from poe.ninja for section '{sectionType}'");
     }
