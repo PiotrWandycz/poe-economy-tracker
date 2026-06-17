@@ -18,11 +18,7 @@ public class EconomyEndpointTests
         var fake = new FakePoeNinjaClient();
         fake.AddSection("Currency", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
-                Items: [
-                    new("divine-orb", "Divine Orb"),
-                    new("annulment-orb", "Orb of Annulment"),
-                    new("chaos-orb", "Chaos Orb")
-                ],
+                Items: [],
                 Rates: new Dictionary<string, decimal> { ["exalted"] = 200m },
                 Primary: "divine"
             ),
@@ -30,6 +26,11 @@ public class EconomyEndpointTests
                 new("divine-orb", PrimaryValue: 5m),
                 new("annulment-orb", PrimaryValue: 2m),
                 new("chaos-orb", PrimaryValue: 0.3m)
+            ],
+            Items: [
+                new("divine-orb", "Divine Orb"),
+                new("annulment-orb", "Orb of Annulment"),
+                new("chaos-orb", "Chaos Orb")
             ]
         ));
 
@@ -75,19 +76,21 @@ public class EconomyEndpointTests
         var fake = new FakePoeNinjaClient();
         fake.AddSection("Currency", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
-                Items: [new("divine-orb", "Divine Orb")],
+                Items: [],
                 Rates: new Dictionary<string, decimal> { ["exalted"] = 200m },
                 Primary: "divine"
             ),
-            Lines: [new("divine-orb", PrimaryValue: 5m)] // 1000 Ex
+            Lines: [new("divine-orb", PrimaryValue: 5m)], // 1000 Ex
+            Items: [new("divine-orb", "Divine Orb")]
         ));
         fake.AddSection("Fragments", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
-                Items: [new("sacrifice-at-dawn", "Sacrifice at Dawn")],
+                Items: [],
                 Rates: new Dictionary<string, decimal> { ["exalted"] = 200m },
                 Primary: "divine"
             ),
-            Lines: [new("sacrifice-at-dawn", PrimaryValue: 0.1m)] // 20 Ex — below threshold
+            Lines: [new("sacrifice-at-dawn", PrimaryValue: 0.1m)], // 20 Ex — below threshold
+            Items: [new("sacrifice-at-dawn", "Sacrifice at Dawn")]
         ));
 
         var sections = new SectionStore();
@@ -127,11 +130,12 @@ public class EconomyEndpointTests
         var fake = new FakePoeNinjaClient();
         fake.AddSection("Currency", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
-                Items: [new("divine-orb", "Divine Orb")],
+                Items: [],
                 Rates: new Dictionary<string, decimal> { ["exalted"] = 189.5m },
                 Primary: "divine"
             ),
-            Lines: [new("divine-orb", PrimaryValue: 1m)]
+            Lines: [new("divine-orb", PrimaryValue: 1m)],
+            Items: [new("divine-orb", "Divine Orb")]
         ));
 
         var sections = new SectionStore();
@@ -159,6 +163,57 @@ public class EconomyEndpointTests
         Assert.Equal(189.5m, response.DivineOrbRate);
     }
 
+    // Real poe.ninja API: Core.Items has only 3 base currencies (divine, exalted, chaos).
+    // All other items appear in the top-level Items list but not in Core.Items.
+    // The cache service must look up names from top-level Items, not Core.Items.
+    [Fact]
+    public async Task Items_not_in_core_items_but_in_top_level_items_are_included()
+    {
+        var fake = new FakePoeNinjaClient();
+        fake.AddSection("Currency", new PoeNinjaApiResponse(
+            Core: new PoeNinjaCore(
+                Items: [new("divine", "Divine Orb")],  // Core only has divine
+                Rates: new Dictionary<string, decimal> { ["exalted"] = 200m },
+                Primary: "divine"
+            ),
+            Lines: [
+                new("divine", PrimaryValue: 1m),       // 200 Ex
+                new("annulment", PrimaryValue: 1.5m)   // 300 Ex — in Lines but NOT in Core.Items
+            ],
+            Items: [
+                new("divine", "Divine Orb"),
+                new("annulment", "Orb of Annulment")   // present in top-level Items
+            ]
+        ));
+
+        var sections = new SectionStore();
+        sections.Update([new PoeNinjaSection("Currency", "General", "Currency")]);
+
+        await using var app = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(b => b
+                .ConfigureTestServices(services =>
+                {
+                    services.AddSingleton<IPoeNinjaClient>(fake);
+                    services.AddSingleton(sections);
+                })
+                .ConfigureAppConfiguration((_, cfg) => {
+                    cfg.Sources.Clear();
+                    cfg.AddInMemoryCollection(new Dictionary<string, string?> {
+                        ["Economy:League"] = "Test League",
+                        ["Economy:ThresholdExalts"] = "0"
+                    });
+                }));
+
+        var client = app.CreateClient();
+        var response = await client.GetFromJsonAsync<EconomyOverviewDto>("/api/economy");
+
+        Assert.NotNull(response);
+        var items = response.Sections[0].Items;
+        Assert.Equal(2, items.Count);
+        Assert.Equal("Orb of Annulment", items[0].Name); // 300 Ex — higher, so first
+        Assert.Equal("Divine Orb", items[1].Name);
+    }
+
     // poe.ninja should be called once per section (by the background cache service),
     // not once per HTTP request. Three requests → same 1 poe.ninja call.
     [Fact]
@@ -167,11 +222,12 @@ public class EconomyEndpointTests
         var fake = new FakePoeNinjaClient();
         fake.AddSection("Currency", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
-                Items: [new("divine-orb", "Divine Orb")],
+                Items: [],
                 Rates: new Dictionary<string, decimal> { ["exalted"] = 200m },
                 Primary: "divine"
             ),
-            Lines: [new("divine-orb", PrimaryValue: 1m)]
+            Lines: [new("divine-orb", PrimaryValue: 1m)],
+            Items: [new("divine-orb", "Divine Orb")]
         ));
 
         var sections = new SectionStore();
