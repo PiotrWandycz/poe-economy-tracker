@@ -42,13 +42,14 @@ public class EconomyCacheService(
             if (divineRate == 0 && apiResponse.Core.Rates.TryGetValue("exalted", out var rate))
                 divineRate = rate;
 
-            var nameById = apiResponse.Items.ToDictionary(x => x.Id, x => x.Name);
+            var itemById = apiResponse.Items.ToDictionary(x => x.Id);
 
             var items = apiResponse.Lines
-                .Where(l => nameById.ContainsKey(l.Id))
+                .Where(l => itemById.ContainsKey(l.Id))
                 .Select(l => new
                 {
-                    Name = nameById[l.Id],
+                    Name = itemById[l.Id].Name,
+                    IconUrl = itemById[l.Id].Icon,
                     ValueInExalts = l.PrimaryValue * divineRate
                 })
                 .Where(i => i.ValueInExalts >= opts.ThresholdExalts)

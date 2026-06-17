@@ -44,7 +44,10 @@ export function EconomyOverview({ data }: { data: EconomyData }) {
                   <>
                     {showSeparator && <hr key={`sep-${section.name}`} className="border-zinc-600 my-1" />}
                     <li key={item.name} className="flex justify-between items-center text-sm">
-                      <span className="text-zinc-300 truncate mr-2">{item.name}</span>
+                      <span className="flex items-center gap-1.5 truncate mr-2">
+                        {item.iconUrl && <img src={item.iconUrl} alt="" className="w-5 h-5 shrink-0 object-contain" />}
+                        <span className="text-zinc-300 truncate">{item.name}</span>
+                      </span>
                       <span className="font-mono text-amber-300 shrink-0">{formatValue(item.valueInExalts, data.divineOrbRate)}</span>
                     </li>
                   </>
