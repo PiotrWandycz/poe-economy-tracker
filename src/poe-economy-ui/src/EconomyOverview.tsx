@@ -1,3 +1,4 @@
+import { formatValue } from './formatValue'
 import type { EconomyData } from './types'
 
 const GROUP_BORDER: Record<string, string> = {
@@ -38,7 +39,7 @@ export function EconomyOverview({ data }: { data: EconomyData }) {
               {section.items.map(item => (
                 <li key={item.name} className="flex justify-between items-center text-sm">
                   <span className="text-zinc-300 truncate mr-2">{item.name}</span>
-                  <span className="font-mono text-amber-300 shrink-0">{item.valueInExalts} Ex</span>
+                  <span className="font-mono text-amber-300 shrink-0">{formatValue(item.valueInExalts, data.divineOrbRate)}</span>
                 </li>
               ))}
             </ul>
