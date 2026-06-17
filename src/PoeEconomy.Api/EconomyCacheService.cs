@@ -8,7 +8,8 @@ namespace PoeEconomy.Api;
 public class EconomyCacheService(
     IPoeNinjaClient poeNinja,
     IMemoryCache cache,
-    IOptions<EconomyOptions> options) : BackgroundService
+    IOptions<EconomyOptions> options,
+    SectionStore sectionStore) : BackgroundService
 {
     public const string CacheKey = "economy:overview";
 
@@ -27,15 +28,16 @@ public class EconomyCacheService(
         }
     }
 
-    private async Task RefreshAsync(CancellationToken cancellationToken)
+    public async Task RefreshAsync(CancellationToken cancellationToken)
     {
         var opts = options.Value;
+        var discovered = sectionStore.Sections;
         var sections = new List<object>();
         decimal divineRate = 0;
 
-        foreach (var sectionCfg in opts.Sections)
+        foreach (var section in discovered)
         {
-            var apiResponse = await poeNinja.GetSectionAsync(opts.League, sectionCfg.Type);
+            var apiResponse = await poeNinja.GetSectionAsync(opts.League, section.Type);
 
             if (divineRate == 0 && apiResponse.Core.Rates.TryGetValue("exalted", out var rate))
                 divineRate = rate;
@@ -54,7 +56,7 @@ public class EconomyCacheService(
                 .ToList();
 
             if (items.Count > 0)
-                sections.Add(new { sectionCfg.Name, sectionCfg.Group, Items = items });
+                sections.Add(new { section.Name, section.Group, Items = items });
         }
 
         cache.Set(CacheKey, new { Sections = sections, DivineOrbRate = divineRate });

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PoeEconomy.Api;
 using PoeEconomy.Api.PoeNinja;
 
 namespace PoeEconomy.Api.Tests;
@@ -32,18 +33,21 @@ public class EconomyEndpointTests
             ]
         ));
 
+        var sections = new SectionStore();
+        sections.Update([new PoeNinjaSection("Currency", "General", "Currency")]);
+
         await using var app = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(b => b
                 .ConfigureTestServices(services =>
-                    services.AddSingleton<IPoeNinjaClient>(fake))
+                {
+                    services.AddSingleton<IPoeNinjaClient>(fake);
+                    services.AddSingleton(sections);
+                })
                 .ConfigureAppConfiguration((_, cfg) => {
                     cfg.Sources.Clear();
                     cfg.AddInMemoryCollection(new Dictionary<string, string?> {
                         ["Economy:League"] = "Test League",
-                        ["Economy:ThresholdExalts"] = "100",
-                        ["Economy:Sections:0:Type"] = "Currency",
-                        ["Economy:Sections:0:Name"] = "Currency",
-                        ["Economy:Sections:0:Group"] = "General"
+                        ["Economy:ThresholdExalts"] = "100"
                     });
                 }));
 
@@ -86,21 +90,24 @@ public class EconomyEndpointTests
             Lines: [new("sacrifice-at-dawn", PrimaryValue: 0.1m)] // 20 Ex — below threshold
         ));
 
+        var sections = new SectionStore();
+        sections.Update([
+            new PoeNinjaSection("Currency", "General", "Currency"),
+            new PoeNinjaSection("Fragments", "General", "Fragments")
+        ]);
+
         await using var app = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(b => b
                 .ConfigureTestServices(services =>
-                    services.AddSingleton<IPoeNinjaClient>(fake))
+                {
+                    services.AddSingleton<IPoeNinjaClient>(fake);
+                    services.AddSingleton(sections);
+                })
                 .ConfigureAppConfiguration((_, cfg) => {
                     cfg.Sources.Clear();
                     cfg.AddInMemoryCollection(new Dictionary<string, string?> {
                         ["Economy:League"] = "Test League",
-                        ["Economy:ThresholdExalts"] = "500",
-                        ["Economy:Sections:0:Type"] = "Currency",
-                        ["Economy:Sections:0:Name"] = "Currency",
-                        ["Economy:Sections:0:Group"] = "General",
-                        ["Economy:Sections:1:Type"] = "Fragments",
-                        ["Economy:Sections:1:Name"] = "Fragments",
-                        ["Economy:Sections:1:Group"] = "General"
+                        ["Economy:ThresholdExalts"] = "500"
                     });
                 }));
 
@@ -127,18 +134,21 @@ public class EconomyEndpointTests
             Lines: [new("divine-orb", PrimaryValue: 1m)]
         ));
 
+        var sections = new SectionStore();
+        sections.Update([new PoeNinjaSection("Currency", "General", "Currency")]);
+
         await using var app = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(b => b
                 .ConfigureTestServices(services =>
-                    services.AddSingleton<IPoeNinjaClient>(fake))
+                {
+                    services.AddSingleton<IPoeNinjaClient>(fake);
+                    services.AddSingleton(sections);
+                })
                 .ConfigureAppConfiguration((_, cfg) => {
                     cfg.Sources.Clear();
                     cfg.AddInMemoryCollection(new Dictionary<string, string?> {
                         ["Economy:League"] = "Test League",
-                        ["Economy:ThresholdExalts"] = "0",
-                        ["Economy:Sections:0:Type"] = "Currency",
-                        ["Economy:Sections:0:Name"] = "Currency",
-                        ["Economy:Sections:0:Group"] = "General"
+                        ["Economy:ThresholdExalts"] = "0"
                     });
                 }));
 
@@ -164,18 +174,21 @@ public class EconomyEndpointTests
             Lines: [new("divine-orb", PrimaryValue: 1m)]
         ));
 
+        var sections = new SectionStore();
+        sections.Update([new PoeNinjaSection("Currency", "General", "Currency")]);
+
         await using var app = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(b => b
                 .ConfigureTestServices(services =>
-                    services.AddSingleton<IPoeNinjaClient>(fake))
+                {
+                    services.AddSingleton<IPoeNinjaClient>(fake);
+                    services.AddSingleton(sections);
+                })
                 .ConfigureAppConfiguration((_, cfg) => {
                     cfg.Sources.Clear();
                     cfg.AddInMemoryCollection(new Dictionary<string, string?> {
                         ["Economy:League"] = "Test League",
-                        ["Economy:ThresholdExalts"] = "0",
-                        ["Economy:Sections:0:Type"] = "Currency",
-                        ["Economy:Sections:0:Name"] = "Currency",
-                        ["Economy:Sections:0:Group"] = "General"
+                        ["Economy:ThresholdExalts"] = "0"
                     });
                 }));
 
