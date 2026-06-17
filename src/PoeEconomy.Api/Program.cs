@@ -10,13 +10,28 @@ builder.Services.Configure<EconomyOptions>(
 builder.Services.AddHttpClient<IPoeNinjaClient, PoeNinjaHttpClient>(c =>
     c.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; PoeEconomy/1.0)"));
 builder.Services.AddMemoryCache();
-builder.Services.AddHostedService<EconomyCacheService>();
+builder.Services.AddSingleton<SectionStore>();
+builder.Services.AddSingleton<EconomyCacheService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<EconomyCacheService>());
 
 var app = builder.Build();
 
 app.MapGet("/api/economy", (IMemoryCache cache) =>
     cache.Get(EconomyCacheService.CacheKey));
 
+app.MapPost("/api/sections/refresh", async (
+    RefreshSectionsRequest body,
+    SectionStore store,
+    EconomyCacheService cacheService) =>
+{
+    var sections = PoeNinjaHtmlParser.ParseNavSections(body.NavHtml);
+    store.Update(sections);
+    await cacheService.RefreshAsync(CancellationToken.None);
+    return Results.Ok(new { SectionCount = sections.Count, Sections = sections });
+});
+
 app.Run();
+
+record RefreshSectionsRequest(string NavHtml);
 
 public partial class Program { }

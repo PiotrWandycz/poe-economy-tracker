@@ -5,14 +5,6 @@ namespace PoeEconomy.Api.PoeNinja;
 public class PoeNinjaHttpClient(HttpClient httpClient) : IPoeNinjaClient
 {
     private const string ApiBase = "https://poe.ninja/poe2/api/economy/exchange/current/overview";
-    private const string WebBase = "https://poe.ninja/poe2/economy";
-
-    public async Task<List<PoeNinjaSection>> GetLeagueSectionsAsync(string league)
-    {
-        var slug = league.Replace(" ", "").ToLowerInvariant();
-        var html = await httpClient.GetStringAsync($"{WebBase}/{slug}/currency");
-        return PoeNinjaHtmlParser.ParseNavSections(html);
-    }
 
     public async Task<PoeNinjaApiResponse> GetSectionAsync(string league, string sectionType)
     {

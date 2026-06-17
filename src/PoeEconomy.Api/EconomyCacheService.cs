@@ -8,7 +8,8 @@ namespace PoeEconomy.Api;
 public class EconomyCacheService(
     IPoeNinjaClient poeNinja,
     IMemoryCache cache,
-    IOptions<EconomyOptions> options) : BackgroundService
+    IOptions<EconomyOptions> options,
+    SectionStore sectionStore) : BackgroundService
 {
     public const string CacheKey = "economy:overview";
 
@@ -27,10 +28,10 @@ public class EconomyCacheService(
         }
     }
 
-    private async Task RefreshAsync(CancellationToken cancellationToken)
+    public async Task RefreshAsync(CancellationToken cancellationToken)
     {
         var opts = options.Value;
-        var discovered = await poeNinja.GetLeagueSectionsAsync(opts.League);
+        var discovered = sectionStore.Sections;
         var sections = new List<object>();
         decimal divineRate = 0;
 

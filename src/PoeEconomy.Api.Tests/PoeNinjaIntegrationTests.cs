@@ -30,20 +30,20 @@ public class PoeNinjaHtmlParserTests
         var sections = PoeNinjaHtmlParser.ParseNavSections(SampleHtml);
 
         Assert.Equal(5, sections.Count);
-        Assert.Equal("Currency",         sections[0].Name);
-        Assert.Equal("General",          sections[0].Group);
-        Assert.Equal("Currency",         sections[0].Type);
-        Assert.Equal("Abyssal Bones",    sections[1].Name);
-        Assert.Equal("General",          sections[1].Group);
-        Assert.Equal("AbyssalBones",     sections[1].Type);
-        Assert.Equal("Soul Cores",       sections[2].Name);
-        Assert.Equal("SoulCores",        sections[2].Type);
-        Assert.Equal("Unique Weapons",   sections[3].Name);
-        Assert.Equal("Equipment",        sections[3].Group);
-        Assert.Equal("UniqueWeapons",    sections[3].Type);
+        Assert.Equal("Currency",          sections[0].Name);
+        Assert.Equal("General",           sections[0].Group);
+        Assert.Equal("Currency",          sections[0].Type);
+        Assert.Equal("Abyssal Bones",     sections[1].Name);
+        Assert.Equal("General",           sections[1].Group);
+        Assert.Equal("AbyssalBones",      sections[1].Type);
+        Assert.Equal("Soul Cores",        sections[2].Name);
+        Assert.Equal("SoulCores",         sections[2].Type);
+        Assert.Equal("Unique Weapons",    sections[3].Name);
+        Assert.Equal("Equipment",         sections[3].Group);
+        Assert.Equal("UniqueWeapons",     sections[3].Type);
         Assert.Equal("Precursor Tablets", sections[4].Name);
-        Assert.Equal("Atlas",            sections[4].Group);
-        Assert.Equal("PrecursorTablets", sections[4].Type);
+        Assert.Equal("Atlas",             sections[4].Group);
+        Assert.Equal("PrecursorTablets",  sections[4].Type);
     }
 
     [Fact]
@@ -55,29 +55,13 @@ public class PoeNinjaHtmlParserTests
 }
 
 /// <summary>
-/// Hits the real poe.ninja API/site. Run with: dotnet test --filter "Category=Integration"
+/// Hits the real poe.ninja API. Run with: dotnet test --filter "Category=Integration"
 /// Skip in CI with: dotnet test --filter "Category!=Integration"
 /// </summary>
 [Trait("Category", "Integration")]
 public class PoeNinjaIntegrationTests
 {
     private const string League = "Runes of Aldur";
-
-    [Fact]
-    public async Task GetLeagueSectionsAsync_returns_all_three_groups()
-    {
-        using var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; PoeEconomy/1.0)");
-        var client = new PoeNinjaHttpClient(httpClient);
-
-        var sections = await client.GetLeagueSectionsAsync(League);
-
-        Assert.NotEmpty(sections);
-        Assert.Contains(sections, s => s.Group == "General");
-        Assert.Contains(sections, s => s.Group == "Equipment");
-        Assert.Contains(sections, s => s.Group == "Atlas");
-        Assert.Contains(sections, s => s.Name == "Currency" && s.Type == "Currency");
-    }
 
     [Fact]
     public async Task GetSectionAsync_Currency_returns_real_data()
@@ -92,7 +76,7 @@ public class PoeNinjaIntegrationTests
         Assert.NotEmpty(response.Lines);
         Assert.NotEmpty(response.Core.Items);
         Assert.True(response.Core.Rates.ContainsKey("exalted"), "Expected 'exalted' key in Core.Rates");
-        Assert.True(response.Core.Rates["exalted"] > 0, "Exalted rate should be positive");
+        Assert.True(response.Core.Rates["exalted"] > 0);
         Assert.Equal("divine", response.Core.Primary);
     }
 }

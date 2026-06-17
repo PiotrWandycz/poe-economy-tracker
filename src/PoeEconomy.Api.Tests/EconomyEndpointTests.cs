@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PoeEconomy.Api;
 using PoeEconomy.Api.PoeNinja;
 
 namespace PoeEconomy.Api.Tests;
@@ -15,7 +16,6 @@ public class EconomyEndpointTests
     public async Task Returns_items_above_threshold_sorted_by_value_descending()
     {
         var fake = new FakePoeNinjaClient();
-        fake.SetSections([new PoeNinjaSection("Currency", "General", "Currency")]);
         fake.AddSection("Currency", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
                 Items: [
@@ -33,10 +33,16 @@ public class EconomyEndpointTests
             ]
         ));
 
+        var sections = new SectionStore();
+        sections.Update([new PoeNinjaSection("Currency", "General", "Currency")]);
+
         await using var app = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(b => b
                 .ConfigureTestServices(services =>
-                    services.AddSingleton<IPoeNinjaClient>(fake))
+                {
+                    services.AddSingleton<IPoeNinjaClient>(fake);
+                    services.AddSingleton(sections);
+                })
                 .ConfigureAppConfiguration((_, cfg) => {
                     cfg.Sources.Clear();
                     cfg.AddInMemoryCollection(new Dictionary<string, string?> {
@@ -67,10 +73,6 @@ public class EconomyEndpointTests
     public async Task Excludes_sections_where_no_items_exceed_threshold()
     {
         var fake = new FakePoeNinjaClient();
-        fake.SetSections([
-            new PoeNinjaSection("Currency", "General", "Currency"),
-            new PoeNinjaSection("Fragments", "General", "Fragments")
-        ]);
         fake.AddSection("Currency", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
                 Items: [new("divine-orb", "Divine Orb")],
@@ -88,10 +90,19 @@ public class EconomyEndpointTests
             Lines: [new("sacrifice-at-dawn", PrimaryValue: 0.1m)] // 20 Ex — below threshold
         ));
 
+        var sections = new SectionStore();
+        sections.Update([
+            new PoeNinjaSection("Currency", "General", "Currency"),
+            new PoeNinjaSection("Fragments", "General", "Fragments")
+        ]);
+
         await using var app = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(b => b
                 .ConfigureTestServices(services =>
-                    services.AddSingleton<IPoeNinjaClient>(fake))
+                {
+                    services.AddSingleton<IPoeNinjaClient>(fake);
+                    services.AddSingleton(sections);
+                })
                 .ConfigureAppConfiguration((_, cfg) => {
                     cfg.Sources.Clear();
                     cfg.AddInMemoryCollection(new Dictionary<string, string?> {
@@ -114,7 +125,6 @@ public class EconomyEndpointTests
     public async Task Response_includes_divine_orb_rate_from_section_data()
     {
         var fake = new FakePoeNinjaClient();
-        fake.SetSections([new PoeNinjaSection("Currency", "General", "Currency")]);
         fake.AddSection("Currency", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
                 Items: [new("divine-orb", "Divine Orb")],
@@ -124,10 +134,16 @@ public class EconomyEndpointTests
             Lines: [new("divine-orb", PrimaryValue: 1m)]
         ));
 
+        var sections = new SectionStore();
+        sections.Update([new PoeNinjaSection("Currency", "General", "Currency")]);
+
         await using var app = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(b => b
                 .ConfigureTestServices(services =>
-                    services.AddSingleton<IPoeNinjaClient>(fake))
+                {
+                    services.AddSingleton<IPoeNinjaClient>(fake);
+                    services.AddSingleton(sections);
+                })
                 .ConfigureAppConfiguration((_, cfg) => {
                     cfg.Sources.Clear();
                     cfg.AddInMemoryCollection(new Dictionary<string, string?> {
@@ -149,7 +165,6 @@ public class EconomyEndpointTests
     public async Task PoeNinja_is_called_once_regardless_of_request_count()
     {
         var fake = new FakePoeNinjaClient();
-        fake.SetSections([new PoeNinjaSection("Currency", "General", "Currency")]);
         fake.AddSection("Currency", new PoeNinjaApiResponse(
             Core: new PoeNinjaCore(
                 Items: [new("divine-orb", "Divine Orb")],
@@ -159,10 +174,16 @@ public class EconomyEndpointTests
             Lines: [new("divine-orb", PrimaryValue: 1m)]
         ));
 
+        var sections = new SectionStore();
+        sections.Update([new PoeNinjaSection("Currency", "General", "Currency")]);
+
         await using var app = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(b => b
                 .ConfigureTestServices(services =>
-                    services.AddSingleton<IPoeNinjaClient>(fake))
+                {
+                    services.AddSingleton<IPoeNinjaClient>(fake);
+                    services.AddSingleton(sections);
+                })
                 .ConfigureAppConfiguration((_, cfg) => {
                     cfg.Sources.Clear();
                     cfg.AddInMemoryCollection(new Dictionary<string, string?> {

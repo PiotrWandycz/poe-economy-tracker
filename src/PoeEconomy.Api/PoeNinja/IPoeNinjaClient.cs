@@ -2,7 +2,6 @@ namespace PoeEconomy.Api.PoeNinja;
 
 public interface IPoeNinjaClient
 {
-    Task<List<PoeNinjaSection>> GetLeagueSectionsAsync(string league);
     Task<PoeNinjaApiResponse> GetSectionAsync(string league, string sectionType);
 }
 
