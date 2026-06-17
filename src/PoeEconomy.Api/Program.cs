@@ -27,18 +27,18 @@ app.MapGet("/api/economy", (IMemoryCache cache) =>
     cache.Get(EconomyCacheService.CacheKey));
 
 app.MapPost("/api/sections/refresh", async (
-    RefreshSectionsRequest body,
+    HttpRequest request,
     SectionStore store,
     EconomyCacheService cacheService) =>
 {
-    var sections = PoeNinjaHtmlParser.ParseNavSections(body.NavHtml);
+    using var reader = new StreamReader(request.Body);
+    var navHtml = await reader.ReadToEndAsync();
+    var sections = PoeNinjaHtmlParser.ParseNavSections(navHtml);
     store.Update(sections);
     await cacheService.RefreshAsync(CancellationToken.None);
     return Results.Ok(new { SectionCount = sections.Count, Sections = sections });
 });
 
 app.Run();
-
-record RefreshSectionsRequest(string NavHtml);
 
 public partial class Program { }
