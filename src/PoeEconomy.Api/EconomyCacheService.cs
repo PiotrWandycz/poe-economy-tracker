@@ -49,7 +49,7 @@ public class EconomyCacheService(
                 .Select(l => new
                 {
                     Name = itemById[l.Id].Name,
-                    IconUrl = itemById[l.Id].Icon,
+                    IconUrl = itemById[l.Id].Image is { } img ? $"https://web.poecdn.com{img}" : null,
                     ValueInExalts = l.PrimaryValue * divineRate
                 })
                 .Where(i => i.ValueInExalts >= opts.ThresholdExalts)
